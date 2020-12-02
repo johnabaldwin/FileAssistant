@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.AnchorPane?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+    <children>
+        <SplitPane id="splitPane" fx:id="splitPane" dividerPositions="0.0879" layoutX="209.0" layoutY="111.0" orientation="VERTICAL" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <items>
+                <AnchorPane prefHeight="137.0" prefWidth="598.0" style="-fx-background-color: #EFEFEF; -fx-border-color: #EFEFEF;">
+                    <children>
+                        <TextField id="fileInput" fx:id="fileInput" layoutX="14.0" layoutY="1.0" promptText="File Name" AnchorPane.bottomAnchor="5.666666666666668" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="448.33333333333337" AnchorPane.topAnchor="5.0" />
+                        <RadioButton id="findFirst" fx:id="findFirst" layoutX="175.0" layoutY="10.0" mnemonicParsing="false" text="Find First">
+                            <toggleGroup>
+                                <ToggleGroup fx:id="fileGroup" />
+                            </toggleGroup>
+                        </RadioButton>
+                        <RadioButton id="findAll" fx:id="findAll" layoutX="268.0" layoutY="10.0" mnemonicParsing="false" text="Find All" toggleGroup="$fileGroup" />
+                        <RadioButton id="findGroup" fx:id="findGroup" layoutX="352.0" layoutY="10.0" mnemonicParsing="false" text="Find Fileset (  ,  )" toggleGroup="$fileGroup" />
+                        <RadioButton id="filePath" fx:id="filePath" layoutX="488.0" layoutY="10.0" mnemonicParsing="false" text="File Path" toggleGroup="$fileGroup" />
+                    </children>
+                </AnchorPane>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                    <children>
+                        <ListView id="matchList" fx:id="matchList" layoutX="99.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <CheckBox id="spellCheck" fx:id="spellCheck" layoutX="42.0" layoutY="202.0" mnemonicParsing="false" text="Spell Check" />
+                        <CheckBox id="diffCheck" fx:id="diffCheck" disable="true" layoutX="42.0" layoutY="243.0" mnemonicParsing="false" text="Diff Check" />
+                        <CheckBox id="replaceWords" fx:id="replaceWords" layoutX="161.0" layoutY="243.0" mnemonicParsing="false" text="Replace Words" />
+                        <CheckBox id="fixWhiteSpace" fx:id="fixWhiteSpace" layoutX="161.0" layoutY="203.0" mnemonicParsing="false" text="Fix White Space" />
+                    </children>
+                </AnchorPane>
+            </items>
+        </SplitPane>
+    </children>
+</AnchorPane>
