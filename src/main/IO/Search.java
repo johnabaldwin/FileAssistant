@@ -1,4 +1,4 @@
-package IO;
+package main.IO;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -18,6 +18,8 @@ public final class Search {
     // Private constructor prevents object creation of static class
     private Search() throws IOException {}
 
+    private static ArrayList<String> results = new ArrayList<>();
+
     /**
      * Method intended to search all files and sub-files in this users {@code HOME_DIRECTORY}.
      * The file name is guaranteed to be of a specific file type or have a wildcard file extension.
@@ -26,6 +28,7 @@ public final class Search {
      */
     public static void findSingleFile(final String fileName) throws IOException {
         PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter("files.out")));
+        results.clear();
         search(writer, fileName, HOME_DIRECTORY);
         writer.close();
     }
@@ -38,6 +41,7 @@ public final class Search {
      */
     public static void findFileSet(ArrayList<String> fileNames) throws IOException {
         PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter("files.out")));
+        results.clear();
         for (String fileName : fileNames)
             search(writer, fileName, HOME_DIRECTORY);
         writer.close();
@@ -58,6 +62,7 @@ public final class Search {
 
         for (File checkFile : filesInDir) {
             if (checkFile.getName().equalsIgnoreCase(fileName)) {
+                results.add(checkFile.getPath());
                 writer.println(checkFile.getPath());
             } else if (checkFile.isDirectory() && checkFile.exists()) {
                 search(writer, fileName, checkFile);
@@ -72,11 +77,11 @@ public final class Search {
      */
     public static void findFirst(final String fileName) throws IOException {
         PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter("files2.out")));
+        results.clear();
         ArrayDeque<File> queue = new ArrayDeque<>();
         queue.add(HOME_DIRECTORY);
 
         while(!queue.isEmpty()) {
-            System.out.println(queue.size());
             File currentDir = queue.removeFirst();
             if (currentDir.isFile()) {
                 continue;
@@ -88,6 +93,7 @@ public final class Search {
 
             for(File file : filesInDir) {
                 if (file.getName().equalsIgnoreCase(fileName)) {
+                    results.add(file.getPath());
                     writer.println(file.getPath());
                     writer.close();
                     return;
@@ -108,5 +114,7 @@ public final class Search {
     private static boolean isNull(Object checkNull) {
         return checkNull == null;
     }
+
+    public static ArrayList<String> getResults() { return results; }
 
 }

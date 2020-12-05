@@ -1,4 +1,6 @@
-package Language;
+package main.Language;
+
+import main.IO.FastScanner;
 
 import java.io.File;
 import java.io.IOException;
@@ -158,6 +160,10 @@ public class Trie {
     }
 
 
+    public boolean contains(String key) {
+        return get(key) != null;
+    }
+
     public String get(String key) {
         Node nd = this.get(root, key, 0);
         if (nd == null)
@@ -173,6 +179,10 @@ public class Trie {
         typo = new Word(key);
         findTypo(root, 0);
         return typo.replacements;
+    }
+
+    public String fineTypo(String key) {
+        return findTypo(key).poll().word;
     }
 
     public static void main(String[] args) throws IOException {

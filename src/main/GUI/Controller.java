@@ -1,10 +1,23 @@
 package main.GUI;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
+import main.IO.Search;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
+import main.Language.ActionController;
+
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Controller {
 
@@ -30,7 +43,10 @@ public class Controller {
     private RadioButton filePath;
 
     @FXML
-    private ListView<?> matchList;
+    private Button searchButton;
+
+    @FXML
+    private ListView<String> matchList;
 
     @FXML
     private CheckBox spellCheck;
@@ -45,40 +61,133 @@ public class Controller {
     private CheckBox fixWhiteSpace;
 
     @FXML
+    private Button startButton;
+
+    @FXML
+    private TextArea replacementWords;
+
+    @FXML
+    private TextArea findWords;
+
+    private boolean filled = false;
+
+    @FXML
     private void initialize() {
         //Set enter key to perform search on current text
         fileInput.setOnKeyPressed(ke -> {
             if (ke.getCode().equals(KeyCode.ENTER)) {
+                try {
+                    performSearch(fileInput.getText());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        searchButton.setOnAction(value ->  {
+            try {
                 performSearch(fileInput.getText());
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         });
 
-        //Set splitpane view to have immutable size
+        //Set splitPane view to have immutable size
         SplitPane.Divider divider = splitPane.getDividers().get(0);
         final double splitPos = divider.getPosition();
-        divider.positionProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldvalue, Number newvalue ) {
-                divider.setPosition(splitPos);
+        divider.positionProperty().addListener((observable, oldValue, newValue)
+                -> divider.setPosition(splitPos));
+
+        //Enable selecting multiple files
+        matchList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+        //Only enable diff checking when 2 files are selected
+        matchList.getSelectionModel().getSelectedItems().addListener((ListChangeListener.Change<? extends String> c) -> {
+            if (matchList.getSelectionModel().getSelectedItems().size() == 2) {
+                diffCheck.setDisable(false);
+            } else {
+                diffCheck.setSelected(false);
+                diffCheck.setDisable(true);
             }
         });
+
+        //Start performing diff check, spell check, white space fix, and word replacement
+        startButton.setOnAction(value -> {
+            try {
+                performActions();
+            } catch (IOException e) {
+
+            }
+        });
+
+        replaceWords.setOnAction(value -> {
+            if (replaceWords.isSelected()) {
+                findWords.setDisable(false);
+                replacementWords.setDisable(false);
+            } else {
+                findWords.setDisable(true);
+                replacementWords.setDisable(true);
+            }
+        });
+
+
     }
 
-    private void performSearch(String file) {
-        RadioButton toggled = (RadioButton) fileGroup.getSelectedToggle();
-        String value = toggled.getId();
-        if (value == findAll.getId()) {
-
-        } else if (value == findFirst.getId()) {
-
-        } else if (value == findGroup.getId()) {
-
-        } else if (value == filePath.getId()) {
-
+    private void performActions() throws IOException {
+        ObservableList<String> selected = matchList.getSelectionModel().getSelectedItems();
+        if (spellCheck.isSelected()) {
+            for (String s : selected) {
+                ActionController.spellCheck(s);
+            }
+        }
+        if (replaceWords.isSelected()) {
+            String[] findList = findWords.getText().split("\n");
+            String[] replaceList = replacementWords.getText().split("\n");
+            if (findList.length == replaceList.length) {
+                HashMap<String, String> findReplace = (HashMap<String, String>) IntStream.range(0, findList.length)
+                        .boxed().collect(Collectors.toMap(i -> findList[i], i -> replaceList[i]));
+                for (String s : selected) {
+                    ActionController.replaceWords(s, findReplace);
+                }
+            }
+        }
+        if (fixWhiteSpace.isSelected()) {
+            for (String s : selected) {
+                ActionController.fixWhiteSpace(s);
+            }
+        }
+        if (diffCheck.isSelected()) {
+            ActionController.diffCheck(selected.get(0), selected.get(1));
         }
     }
 
-    public Controller() {
+    @FXML
+    private void performSearch(String file) throws IOException {
+        RadioButton toggled = (RadioButton) fileGroup.getSelectedToggle();
+        ObservableList<String> files;
+        if (toggled != null && toggled.getId().equals(findAll.getId())) {
+            Search.findSingleFile(file);
+            files = FXCollections.observableList(Search.getResults());
+            matchList.setItems(files);
+        } else if (toggled != null && toggled.getId().equals(findFirst.getId())) {
+            Search.findFirst(file);
+            files = FXCollections.observableList(Search.getResults());
+            matchList.setItems(files);
+        } else if (toggled != null && toggled.getId().equals(findGroup.getId())) {
+            ArrayList<String> temp = (ArrayList<String>)Arrays.asList(file.split(", "));
+            Search.findFileSet(temp);
+            files = FXCollections.observableList(Search.getResults());
+            matchList.setItems(files);
+        } else if (toggled != null && toggled.getId().equals(filePath.getId())) {
+            ArrayList<String> temp = new ArrayList<>();
+            temp.add(file);
+            files = FXCollections.observableList(temp);
+            File test = new File(file);
+            if (test.exists())
+                matchList.setItems(files);
+        }
 
+    }
+
+    public Controller() {
     }
 }

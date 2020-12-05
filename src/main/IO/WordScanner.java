@@ -1,4 +1,4 @@
-package IO;
+package main.IO;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -6,12 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import IO.FastScanner;
+import java.lang.reflect.Array;
+import java.util.*;
 
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -20,8 +16,6 @@ import org.apache.poi.xwpf.usermodel.XWPFPictureData;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 
 public class WordScanner extends FastScanner {
-    //most likely unnecessary
-    //private final FileInputStream fileStream;
 
     private final XWPFDocument XMLDoc;
 
@@ -36,6 +30,8 @@ public class WordScanner extends FastScanner {
     final private String tab = "	";
 
     final private String newLine = "";
+
+    final private String newRun = "¬ ¬ ¬ NR  ¬ ¬ ¬";
 
     public WordScanner(File path) throws IOException, FileNotFoundException {
         super(path.getAbsolutePath());
@@ -57,7 +53,7 @@ public class WordScanner extends FastScanner {
         search();
     }
 
-    private void search() throws IOException, FileNotFoundException {
+    private void search() throws IOException {
         Iterator paragraphIterator = XMLDoc.getParagraphsIterator();
         XWPFParagraph paragraph;
         while (paragraphIterator.hasNext()) {
@@ -118,8 +114,55 @@ public class WordScanner extends FastScanner {
         }
     }
 
+    @Override
+    public Queue<String> getDoc() throws IOException {
+        List<XWPFParagraph> paragraphs = XMLDoc.getParagraphs();
+        ArrayDeque<String> text = new ArrayDeque<>();
+        for (XWPFParagraph p : paragraphs) {
+            for (XWPFRun r : p.getRuns()) {
+                String run = r.getText(0);
+                StringTokenizer st = new StringTokenizer(run);
+                while (st.hasMoreTokens()) {
+                    text.push(st.nextToken());
+                }
+                text.push(newRun);
+            }
+            text.push(newParagraph);
+        }
+        return text;
+    }
+
     public void getPictures() {
         List<XWPFPictureData> pictures = XMLDoc.getAllPictures();
+    }
+
+
+    public void write(ArrayDeque<String> words) throws IOException {
+        ArrayDeque<String> newParagraphs = new ArrayDeque<>();
+        String paragraph = "";
+        while(!words.isEmpty()) {
+            paragraph += newParagraphs.getFirst();
+            if (newParagraphs.peek().equals(newRun)) {
+                newParagraphs.push(paragraph);
+                newParagraphs.getFirst();
+            } else if (newParagraphs.peek().equals(newParagraph)) {
+                newParagraphs.push(paragraph);
+                paragraph = "";
+                newParagraphs.getFirst();
+            }
+        }
+
+        List<XWPFParagraph> paragraphs = XMLDoc.getParagraphs();
+        for (XWPFParagraph p : paragraphs) {
+            for (XWPFRun r : p.getRuns()) {
+                r.setText(newParagraphs.getFirst());
+            }
+        }
+        XMLDoc.write(new FileOutputStream(getPath()));
+    }
+
+    public String getNewRun() {
+        return newRun;
     }
 
     /**
@@ -132,5 +175,4 @@ public class WordScanner extends FastScanner {
         testMap.put(" {2,}", "\n");
         WordScanner test = new WordScanner(new File("C:\\Users\\John\\Documents\\costa concordia.docx"), testMap);
     }
-
 }

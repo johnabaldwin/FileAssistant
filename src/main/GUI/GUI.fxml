@@ -9,7 +9,9 @@
 <?import javafx.scene.layout.AnchorPane?>
 
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextArea?>
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.GUI.Controller">
     <children>
         <SplitPane id="splitPane" fx:id="splitPane" dividerPositions="0.0879" layoutX="209.0" layoutY="111.0" orientation="VERTICAL" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <items>
@@ -24,6 +26,7 @@
                         <RadioButton id="findAll" fx:id="findAll" layoutX="268.0" layoutY="10.0" mnemonicParsing="false" text="Find All" toggleGroup="$fileGroup" />
                         <RadioButton id="findGroup" fx:id="findGroup" layoutX="352.0" layoutY="10.0" mnemonicParsing="false" text="Find Fileset (  ,  )" toggleGroup="$fileGroup" />
                         <RadioButton id="filePath" fx:id="filePath" layoutX="488.0" layoutY="10.0" mnemonicParsing="false" text="File Path" toggleGroup="$fileGroup" />
+                        <Button id="searchButton" fx:id="searchButton" layoutX="149.0" layoutY="6.0" mnemonicParsing="false" AnchorPane.leftAnchor="149.0" AnchorPane.rightAnchor="432.0" />
                     </children>
                 </AnchorPane>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
@@ -33,6 +36,9 @@
                         <CheckBox id="diffCheck" fx:id="diffCheck" disable="true" layoutX="42.0" layoutY="243.0" mnemonicParsing="false" text="Diff Check" />
                         <CheckBox id="replaceWords" fx:id="replaceWords" layoutX="161.0" layoutY="243.0" mnemonicParsing="false" text="Replace Words" />
                         <CheckBox id="fixWhiteSpace" fx:id="fixWhiteSpace" layoutX="161.0" layoutY="203.0" mnemonicParsing="false" text="Fix White Space" />
+                        <Button id="startButton" fx:id="startButton" layoutX="119.0" layoutY="284.0" mnemonicParsing="false" text="Start" />
+                        <TextArea fx:id="replacementWords" layoutX="457.0" layoutY="152.0" prefHeight="200.0" prefWidth="134.0" promptText="Replacement word, one per line" disable="true" />
+                        <TextArea fx:id="findWords" layoutX="323.0" layoutY="152.0" prefHeight="200.0" prefWidth="134.0" promptText="Words to replace, one per line" disable="true" AnchorPane.topAnchor="152.0" />
                     </children>
                 </AnchorPane>
             </items>
