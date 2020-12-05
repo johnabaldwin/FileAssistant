@@ -41,12 +41,15 @@ public class WordWrapper {
         return random.nextInt(WORD_COUNT * 2);
     }
 
+    public static int generateParagraphCount() { return random.nextInt(WORD_COUNT % 23); }
+
+    public static int generateRunLength() { return random.nextInt(WORD_COUNT % 599); }
+
     public static String getTypo() {
         String word = words.get(random.nextInt(WORD_COUNT));
         int typo = random.nextInt(word.length());
         char c = (char)(random.nextInt(26) + 'a');
         word = word.substring(0, typo) + c + word.substring(typo + 1);
-        System.out.println(word);
         return word;
     }
 

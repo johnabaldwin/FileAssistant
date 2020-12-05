@@ -1,5 +1,6 @@
 package test.Generator;
 
+import java.util.HashSet;
 import java.util.Scanner;
 
 public class Generator {
@@ -9,11 +10,16 @@ public class Generator {
         int tdocs = in.nextInt();
         System.out.println("Enter the number of word documents needed: ");
         int wdocs = in.nextInt();
+        HashSet<String> paths = new HashSet<String>();
         for (int i = 0; i < tdocs; i++) {
-            RandomText.generate();
+            String s = RandomText.generate();
+            if (s != null)
+                paths.add(s);
         }
         for (int i = 0; i < wdocs; i++) {
-            RandomWord.generate();
+            String s = RandomWord.generate();
+            if (s != null)
+                paths.add(s);
         }
     }
 }
