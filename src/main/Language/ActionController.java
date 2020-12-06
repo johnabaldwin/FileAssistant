@@ -101,10 +101,39 @@ public class ActionController {
     public static void replaceWords(String filePath, HashMap<String, String> replacements) throws IOException{
         String extension = filePath.substring(filePath.lastIndexOf('.'));
         if (extension.equals(".doc") || extension.equals(".docx")) {
-            scanner = new WordScanner(new File(filePath), replacements);
-
+            scanner = new WordScanner(new File(filePath));
+            ArrayDeque<String> words = (ArrayDeque<String>) scanner.getDoc();
+            words.addFirst(" ¬ ¬ ¬BEGIN¬ ¬ ¬");
+            String cur = words.removeFirst();
+            do {
+                if (replacements.containsKey(cur)) {
+                    cur = replacements.get(cur);
+                }
+                words.add(cur);
+                cur = words.removeFirst();
+            } while (!cur.equals(" ¬ ¬ ¬BEGIN¬ ¬ ¬"));
+            scanner.write(words);
         } else {
-            scanner = new TextScanner(new File(filePath), replacements);
+            scanner = new TextScanner(new File(filePath));
+            ArrayDeque<String> words = (ArrayDeque<String>) scanner.getDoc();
+            PrintWriter writer = new PrintWriter(new FileWriter(new File(filePath)));
+            while (!words.isEmpty()) {
+                String curLine = words.removeFirst();
+                StringTokenizer tk = new StringTokenizer(curLine);
+                while (tk.hasMoreTokens()) {
+                    String cur = tk.nextToken();
+                    if (replacements.containsKey(cur)) {
+                        cur = replacements.get(cur);
+                    }
+                    if (tk.hasMoreTokens())
+                        writer.print(cur + " ");
+                    else
+                        writer.print(cur);
+                }
+                if (!words.isEmpty())
+                    writer.println();
+            }
+            writer.close();
         }
     }
 

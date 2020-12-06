@@ -2,7 +2,6 @@ package main.Language;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.PriorityQueue;
 import java.util.Scanner;
@@ -22,7 +21,7 @@ public class Trie {
 
     private static class Word {
         private final String error;
-        private PriorityQueue<Replacement> replacements = new PriorityQueue<>();
+        private final PriorityQueue<Replacement> replacements = new PriorityQueue<>();
 
         public Word(String key) {
             error = key;
@@ -60,7 +59,7 @@ public class Trie {
 
     public Node root;
     private Word typo;
-    private HashSet<String> fastContains = new HashSet<>();
+    private final HashSet<String> fastContains = new HashSet<>();
 
     private int size = 0;
 

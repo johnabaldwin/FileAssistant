@@ -7,7 +7,6 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 
 //TODO
@@ -16,7 +15,6 @@ public class RandomWord {
     public static String generate() {
         try {
             String path = WordWrapper.getRandomWord() + ".docx";
-            int wordCount = WordWrapper.generateWordCount();
             int paragraphCount = WordWrapper.generateParagraphCount();
 
             XWPFDocument doc = new XWPFDocument();
@@ -24,18 +22,18 @@ public class RandomWord {
             for (int i = 0; i < paragraphCount; i++) {
                 paragraphs.add(doc.createParagraph());
             }
-            for (int i = 0; i < paragraphs.size(); i++) {
-                XWPFRun temp = paragraphs.get(i).createRun();
+            for (XWPFParagraph paragraph : paragraphs) {
+                XWPFRun temp = paragraph.createRun();
                 int runLength = WordWrapper.generateRunLength();
-                String run = "";
+                StringBuilder run = new StringBuilder();
                 for (int j = 0; j < runLength; j++) {
                     if (j % 17 == 0) {
-                        run += WordWrapper.getTypo() + " ";
+                        run.append(WordWrapper.getTypo()).append(" ");
                     } else {
-                        run += WordWrapper.getRandomWord() + " ";
+                        run.append(WordWrapper.getRandomWord()).append(" ");
                     }
                 }
-                temp.setText(run);
+                temp.setText(run.toString());
             }
             FileOutputStream out = new FileOutputStream(new File(path));
             doc.write(out);

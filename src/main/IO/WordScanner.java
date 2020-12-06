@@ -6,10 +6,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import java.lang.reflect.Array;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.Queue;
 
-import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFPictureData;
@@ -19,9 +22,7 @@ public class WordScanner extends FastScanner {
 
     private final XWPFDocument XMLDoc;
 
-    private final XWPFWordExtractor XMLExtractor;
-
-    private HashMap<String, String> findReplace;
+    private HashMap<String, String> findReplace = new HashMap<>();
 
     private Set<String> keys;
 
@@ -33,61 +34,13 @@ public class WordScanner extends FastScanner {
 
     final private String newRun = "¬ ¬ ¬ NR  ¬ ¬ ¬";
 
-    public WordScanner(File path) throws IOException, FileNotFoundException {
+    public WordScanner(File path) throws IOException {
         super(path.getAbsolutePath());
         XMLDoc = new XWPFDocument(new FileInputStream(path));
-        XMLExtractor = new XWPFWordExtractor(XMLDoc);
 
     }
 
-    public WordScanner(File path, HashMap<String, String> fR) throws IOException, FileNotFoundException {
-        super(path.getAbsolutePath());
-        XMLDoc = new XWPFDocument(new FileInputStream(path));
-        XMLExtractor = new XWPFWordExtractor(XMLDoc);
-        findReplace = fR;
-        keys = fR.keySet();
-        search();
-    }
-
-    private void search() throws IOException {
-        Iterator paragraphIterator = XMLDoc.getParagraphsIterator();
-        XWPFParagraph paragraph;
-        while (paragraphIterator.hasNext()) {
-            paragraph = (XWPFParagraph) paragraphIterator.next();
-            for (String key : keys) {
-                //String replacement = paragraph.getParagraphText().replaceAll(key, findReplace.get(key));
-                List<XWPFRun> runs = paragraph.getRuns();
-                String last = "";
-                for (XWPFRun r : runs) {
-                    System.out.println(r);
-                    String replacement = r.getText(0);
-
-                    replacement = checkSpaces(replacement);
-                    if (replacement != null && replacement.contains(key)) {
-                        r.setText(replacement.replace(key, findReplace.get(key)), 0);
-                    }
-                    last = replacement;
-                }
-            }
-        }
-        XMLDoc.write(new FileOutputStream(getPath()));
-    }
-
-    private String checkSpaces(String r) {
-        if (r != null && r.charAt(0) == ' ') {
-            System.out.println("enter");
-            r = r.replaceFirst(" ", "\n");
-        }
-        if (r != null && r.endsWith(" ")) {
-            r = r.trim();
-        }
-        if (r != null && r.equals(" ")) {
-            r = "";
-        }
-        System.out.println(r);
-        return r;
-    }
-
+    @Deprecated
     private void changeWhitespace() {
         if (findReplace.containsKey("\t")) {
             findReplace.put(tab, findReplace.get("\t"));
@@ -111,7 +64,7 @@ public class WordScanner extends FastScanner {
     }
 
     @Override
-    public Queue<String> getDoc() throws IOException {
+    public Queue<String> getDoc() {
         List<XWPFParagraph> paragraphs = XMLDoc.getParagraphs();
         ArrayDeque<String> text = new ArrayDeque<>();
         for (XWPFParagraph p : paragraphs) {
@@ -128,21 +81,21 @@ public class WordScanner extends FastScanner {
         return text;
     }
 
-    public void getPictures() {
-        List<XWPFPictureData> pictures = XMLDoc.getAllPictures();
+    public List<XWPFPictureData> getPictures() {
+        return XMLDoc.getAllPictures();
     }
 
 
     public void write(ArrayDeque<String> words) throws IOException {
         ArrayDeque<String> newParagraphs = new ArrayDeque<>();
-        String paragraph = "";
+        StringBuilder paragraph = new StringBuilder();
         while(!words.isEmpty()) {
             String cur = words.poll();
             if (cur.equals(newParagraph) || cur.equals(newRun)) {
-                newParagraphs.add(paragraph);
-                paragraph = "";
+                newParagraphs.add(paragraph.toString());
+                paragraph = new StringBuilder();
             } else {
-                paragraph += cur + " ";
+                paragraph.append(cur).append(" ");
             }
         }
 
@@ -164,9 +117,7 @@ public class WordScanner extends FastScanner {
      * @throws IOException
      * @throws FileNotFoundException
      */
-    public static void main(String[] args) throws IOException, FileNotFoundException {
-        HashMap<String, String> testMap = new HashMap<>();
-        testMap.put(" {2,}", "\n");
-        WordScanner test = new WordScanner(new File("C:\\Users\\John\\Documents\\costa concordia.docx"), testMap);
+    public static void main(String[] args) throws IOException {
+
     }
 }

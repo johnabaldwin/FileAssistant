@@ -10,7 +10,6 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import main.Language.ActionController;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -68,8 +67,6 @@ public class Controller {
 
     @FXML
     private TextArea findWords;
-
-    private boolean filled = false;
 
     private boolean inSearch = false;
 
@@ -130,7 +127,7 @@ public class Controller {
                     startButton.setDisable(false);
                 }
             } catch (IOException e) {
-
+                System.err.println("IO Exception thrown: 101");
             }
         });
 

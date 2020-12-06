@@ -54,7 +54,7 @@ public abstract class FastScanner {
         try {
             result = br.ready();
         } catch (IOException e) {
-            System.err.println(e);
+            System.err.println("Buffered Reader not ready");
         }
         return result;
     }

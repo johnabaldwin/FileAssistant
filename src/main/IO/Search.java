@@ -16,9 +16,9 @@ public final class Search {
     private static final File HOME_DIRECTORY = new File(System.getProperty("user.home"));
 
     // Private constructor prevents object creation of static class
-    private Search() throws IOException {}
+    private Search() {}
 
-    private static ArrayList<String> results = new ArrayList<>();
+    private static final ArrayList<String> results = new ArrayList<>();
 
     /**
      * Method intended to search all files and sub-files in this users {@code HOME_DIRECTORY}.
@@ -52,9 +52,8 @@ public final class Search {
      * @param writer - PrintWriter to write found file paths to output
      * @param fileName - File name to search for
      * @param currentDir - Current working directory
-     * @throws IOException
      */
-    private static void search(final PrintWriter writer, final String fileName, File currentDir) throws IOException {
+    private static void search(final PrintWriter writer, final String fileName, File currentDir) {
         File[] filesInDir = currentDir.listFiles();
         if (isNull(filesInDir)) {
             return;
