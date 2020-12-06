@@ -23,7 +23,7 @@ public abstract class FastScanner {
         path = p;
         file = new File(p);
         fileName = file.getName();
-        extension = file.getName().substring(p.lastIndexOf('.'));
+        extension = p.substring(p.lastIndexOf('.'));
         br = new BufferedReader(new FileReader(p));
         st = new StringTokenizer("");
     }

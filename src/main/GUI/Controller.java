@@ -71,6 +71,10 @@ public class Controller {
 
     private boolean filled = false;
 
+    private boolean inSearch = false;
+
+    private boolean inAction = false;
+
     @FXML
     private void initialize() {
         //Set enter key to perform search on current text
@@ -85,7 +89,12 @@ public class Controller {
         });
         searchButton.setOnAction(value ->  {
             try {
-                performSearch(fileInput.getText());
+                if (!inSearch) {
+                    inSearch = true;
+                    performSearch(fileInput.getText());
+                    inSearch = false;
+                    fileGroup.getSelectedToggle().setSelected(false);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -113,7 +122,13 @@ public class Controller {
         //Start performing diff check, spell check, white space fix, and word replacement
         startButton.setOnAction(value -> {
             try {
-                performActions();
+                if (!inAction) {
+                    inAction = true;
+                    startButton.setDisable(true);
+                    performActions();
+                    inAction = false;
+                    startButton.setDisable(false);
+                }
             } catch (IOException e) {
 
             }
@@ -138,6 +153,7 @@ public class Controller {
             for (String s : selected) {
                 ActionController.spellCheck(s);
             }
+            spellCheck.setSelected(false);
         }
         if (replaceWords.isSelected()) {
             String[] findList = findWords.getText().split("\n");
@@ -149,14 +165,17 @@ public class Controller {
                     ActionController.replaceWords(s, findReplace);
                 }
             }
+            replaceWords.setSelected(false);
         }
         if (fixWhiteSpace.isSelected()) {
             for (String s : selected) {
                 ActionController.fixWhiteSpace(s);
             }
+            fixWhiteSpace.setSelected(false);
         }
         if (diffCheck.isSelected()) {
             ActionController.diffCheck(selected.get(0), selected.get(1));
+            diffCheck.setSelected(false);
         }
     }
 

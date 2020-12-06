@@ -46,10 +46,6 @@ public class WordScanner extends FastScanner {
         XMLExtractor = new XWPFWordExtractor(XMLDoc);
         findReplace = fR;
         keys = fR.keySet();
-        System.out.println(keys);
-
-        //changeWhiteSpace();
-
         search();
     }
 
@@ -123,11 +119,11 @@ public class WordScanner extends FastScanner {
                 String run = r.getText(0);
                 StringTokenizer st = new StringTokenizer(run);
                 while (st.hasMoreTokens()) {
-                    text.push(st.nextToken());
+                    text.add(st.nextToken());
                 }
-                text.push(newRun);
+                text.add(newRun);
             }
-            text.push(newParagraph);
+            text.add(newParagraph);
         }
         return text;
     }
@@ -141,21 +137,19 @@ public class WordScanner extends FastScanner {
         ArrayDeque<String> newParagraphs = new ArrayDeque<>();
         String paragraph = "";
         while(!words.isEmpty()) {
-            paragraph += newParagraphs.getFirst();
-            if (newParagraphs.peek().equals(newRun)) {
-                newParagraphs.push(paragraph);
-                newParagraphs.getFirst();
-            } else if (newParagraphs.peek().equals(newParagraph)) {
-                newParagraphs.push(paragraph);
+            String cur = words.poll();
+            if (cur.equals(newParagraph) || cur.equals(newRun)) {
+                newParagraphs.add(paragraph);
                 paragraph = "";
-                newParagraphs.getFirst();
+            } else {
+                paragraph += cur + " ";
             }
         }
 
         List<XWPFParagraph> paragraphs = XMLDoc.getParagraphs();
         for (XWPFParagraph p : paragraphs) {
             for (XWPFRun r : p.getRuns()) {
-                r.setText(newParagraphs.getFirst());
+                r.setText(newParagraphs.poll(),0);
             }
         }
         XMLDoc.write(new FileOutputStream(getPath()));

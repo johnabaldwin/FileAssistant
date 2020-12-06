@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.StringTokenizer;
 
 public class ActionController {
 
@@ -33,28 +34,36 @@ public class ActionController {
             scanner = new WordScanner(new File(filePath));
             ArrayDeque<String> words = (ArrayDeque<String>) scanner.getDoc();
             words.addFirst(" ¬ ¬ ¬BEGIN¬ ¬ ¬");
-            String cur = words.getFirst();
+            String cur = words.removeFirst();
             do {
                 if (!trie.contains(cur) && !cur.equals(scanner.getNewParagraph())
                         && !cur.equals(scanner.getNewRun())) {
-                    cur = trie.fineTypo(cur);
+                    cur = trie.findBestTypo(cur);
                 }
-                words.push(cur);
-                cur = words.getFirst();
+                words.add(cur);
+                cur = words.removeFirst();
             } while (!cur.equals(" ¬ ¬ ¬BEGIN¬ ¬ ¬"));
             scanner.write(words);
 
         } else {
             scanner = new TextScanner(new File(filePath));
             ArrayDeque<String> words = (ArrayDeque<String>) scanner.getDoc();
-
             PrintWriter writer = new PrintWriter(new FileWriter(new File(filePath)));
             while (!words.isEmpty()) {
-                String cur = words.getFirst();
-                if (!trie.contains(cur)) {
-                    cur = trie.fineTypo(cur);
+                String curLine = words.removeFirst();
+                StringTokenizer tk = new StringTokenizer(curLine);
+                while (tk.hasMoreTokens()) {
+                    String cur = tk.nextToken();
+                    if (!trie.contains(cur)) {
+                        cur = trie.findBestTypo(cur);
+                    }
+                    if (tk.hasMoreTokens())
+                        writer.print(cur + " ");
+                    else
+                        writer.print(cur);
                 }
-                writer.print(cur);
+                if (!words.isEmpty())
+                    writer.println();
             }
             writer.close();
         }
@@ -73,11 +82,17 @@ public class ActionController {
 
             PrintWriter writer = new PrintWriter(new FileWriter(new File(filePath)));
             while (!words.isEmpty()) {
-                if (words.peek().trim().equals("NEWLINE")) {
-                    writer.println();
-                    continue;
+                String curLine = words.removeFirst();
+                StringTokenizer tk = new StringTokenizer(curLine);
+                while (tk.hasMoreTokens()) {
+                    String cur = tk.nextToken();
+                    if (tk.hasMoreTokens())
+                        writer.print(cur + " ");
+                    else
+                        writer.print(cur);
                 }
-                writer.print(words.poll());
+                if (!words.isEmpty())
+                    writer.println();
             }
             writer.close();
         }

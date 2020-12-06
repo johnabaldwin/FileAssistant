@@ -1,9 +1,9 @@
 package main.Language;
 
-import main.IO.FastScanner;
-
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.PriorityQueue;
 import java.util.Scanner;
 
@@ -60,6 +60,9 @@ public class Trie {
 
     public Node root;
     private Word typo;
+    private HashSet<String> fastContains = new HashSet<>();
+
+    private int size = 0;
 
     private Node get(Node x, String key, int d) {
         if (x == null)
@@ -108,9 +111,7 @@ public class Trie {
         } else {
             temp = findTypo(cur.right, d);
         }
-        System.out.println(temp);
         if (temp == null) {
-            System.out.println(cur.c);
             findWords(cur);
         }
 
@@ -161,7 +162,7 @@ public class Trie {
 
 
     public boolean contains(String key) {
-        return get(key) != null;
+        return fastContains.contains(key);
     }
 
     public String get(String key) {
@@ -172,7 +173,10 @@ public class Trie {
     }
 
     public void put(String key) {
-        root = this.put(root, key, 0);
+        if (fastContains.add(key)) {
+            root = this.put(root, key, 0);
+            size++;
+        }
     }
 
     public PriorityQueue<Replacement> findTypo(String key) {
@@ -181,15 +185,21 @@ public class Trie {
         return typo.replacements;
     }
 
-    public String fineTypo(String key) {
+    public String findBestTypo(String key) {
+        PriorityQueue<Replacement> result = findTypo(key);
+        if (result.peek() == null)
+            return key;
         return findTypo(key).poll().word;
     }
 
+    public int getSize() { return size; }
+
     public static void main(String[] args) throws IOException {
-        Trie test = new Trie(new File("test.txt"));
+        Trie test = new Trie(new File("words.txt"));
         System.out.println("hello world");
-        if (test.get("hte") == null) {
-            PriorityQueue<Replacement> list = test.findTypo("hte");
+        if (test.get("intuiyionally") == null) {
+            System.out.println("enter");
+            PriorityQueue<Replacement> list = test.findTypo("intuiyionally");
             System.out.println(list.size());
             System.out.println(list);
             while (!list.isEmpty())
