@@ -42,7 +42,7 @@ public class RandomWord {
             doc.close();
             out.close();
         } catch (Exception e) {
-            System.out.println("Create File Error: (100)");
+            System.err.println("Create File Error: (100)");
         }
         return null;
     }

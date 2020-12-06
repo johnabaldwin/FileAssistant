@@ -21,7 +21,7 @@ public class WordWrapper {
             }
             WORD_COUNT = count + 1;
         } catch (IOException e) {
-            System.out.println("File read error: 001");
+            System.err.println("File read error: 001");
             WORD_COUNT = 0;
         }
     }
@@ -51,6 +51,13 @@ public class WordWrapper {
         char c = (char)(random.nextInt(26) + 'a');
         word = word.substring(0, typo) + c + word.substring(typo + 1);
         return word;
+    }
+
+    public static boolean randomBoolean() {
+        if (Math.random() < 0.2) {
+            return true;
+        }
+        return false;
     }
 
 }

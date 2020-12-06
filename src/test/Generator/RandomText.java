@@ -13,14 +13,17 @@ public class RandomText {
             int wordCount = WordWrapper.generateWordCount();
             for (int i = 0; i < wordCount; i++) {
                 if (i % 17 == 0)
-                    out.print(WordWrapper.getTypo());
+                    out.print(WordWrapper.getTypo() + " ");
                 else
-                    out.print(WordWrapper.getRandomWord());
+                    out.print(WordWrapper.getRandomWord() + " ");
+
+                if (WordWrapper.randomBoolean())
+                    out.println();
             }
             out.close();
             return path;
         } catch (IOException e) {
-            System.out.println("Create file error: 010");
+            System.err.println("Create file error: 010");
         }
         return null;
     }
