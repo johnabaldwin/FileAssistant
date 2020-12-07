@@ -9,9 +9,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 
-//TODO
+/**
+ * Class to generate random word documents
+ */
 public class RandomWord {
 
+    /**
+     * Static method to generate a random word document with unknown word count, length, and typos
+     * @return the file path
+     */
     public static String generate() {
         try {
             String path = WordWrapper.getRandomWord() + ".docx";

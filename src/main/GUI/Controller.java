@@ -18,60 +18,84 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/*
+ * GUI Controller with methods outlining actions to take on various user inputs
+ */
 public class Controller {
 
+    //Split pane defining the entire window
     @FXML
     private SplitPane splitPane;
 
+    //Text input for file name or path
     @FXML
     private TextField fileInput;
 
-    @FXML
-    private RadioButton findFirst;
-
+    //Toggle group for search method radio buttons
     @FXML
     private ToggleGroup fileGroup;
 
+    //Radio button for {@code Search.findFirst} search
+    @FXML
+    private RadioButton findFirst;
+
+    //Radio button for {@code Search.findFile} search
     @FXML
     private RadioButton findAll;
 
+    //Radio button for {@code Search.findFileSet} search
     @FXML
     private RadioButton findGroup;
 
+    //Radio button indicating {@code fileInput} is a file path
     @FXML
     private RadioButton filePath;
 
+    //Enter button for {@code fileInput} to begin search
     @FXML
     private Button searchButton;
 
+    //List of files matching the input to be shown in the list view
     @FXML
     private ListView<String> matchList;
 
+    //Check box indicating to perform spell check
     @FXML
     private CheckBox spellCheck;
 
+    //Check box indicating to perform diff check
     @FXML
     private CheckBox diffCheck;
 
+    //Check box indicating to perform word replacement
     @FXML
     private CheckBox replaceWords;
 
+    //Check box indicating to perform whitespace fix
     @FXML
     private CheckBox fixWhiteSpace;
 
+    //Start button for check box actions
     @FXML
     private Button startButton;
 
+    //Text area for replacement words for {@code replaceWords}
     @FXML
     private TextArea replacementWords;
 
+    //Text area for new words for {@code replaceWords}
     @FXML
     private TextArea findWords;
 
+    //In search boolean to prevent repeated search restart
     private boolean inSearch = false;
 
+    //In actions boolean to prevent repeated action restart
     private boolean inAction = false;
 
+    /**
+     * Initializer for all key presses
+     */
     @FXML
     private void initialize() {
         //Set enter key to perform search on current text
@@ -84,6 +108,7 @@ public class Controller {
                 }
             }
         });
+        //Set search button as replacement to enter key
         searchButton.setOnAction(value ->  {
             try {
                 if (!inSearch) {
@@ -131,6 +156,7 @@ public class Controller {
             }
         });
 
+        //If replaceWords is selected make findWords and replacementWords visible
         replaceWords.setOnAction(value -> {
             if (replaceWords.isSelected()) {
                 findWords.setDisable(false);
@@ -144,6 +170,11 @@ public class Controller {
 
     }
 
+    /**
+     * Takes the file manipulation selections of the user and executes them
+     * @throws IOException - this method deals with many functions that are meant exclusively to
+     *                          manipulate files
+     */
     private void performActions() throws IOException {
         ObservableList<String> selected = matchList.getSelectionModel().getSelectedItems();
         if (spellCheck.isSelected()) {
@@ -176,7 +207,13 @@ public class Controller {
         }
     }
 
-    @FXML
+    /**
+     * Takes input of a file name or path to search for in the users file system based on
+     * their selected search method and adds it to the listview for users to select the
+     * desired files
+     * @param file - file name to perform search on
+     * @throws IOException - searching a file system is likely to throw a file not found exception
+     */
     private void performSearch(String file) throws IOException {
         RadioButton toggled = (RadioButton) fileGroup.getSelectedToggle();
         ObservableList<String> files;
@@ -202,8 +239,5 @@ public class Controller {
                 matchList.setItems(files);
         }
 
-    }
-
-    public Controller() {
     }
 }

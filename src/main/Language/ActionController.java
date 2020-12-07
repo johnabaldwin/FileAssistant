@@ -14,10 +14,19 @@ import java.util.StringTokenizer;
 
 public class ActionController {
 
+    /**
+     * Trie for spellchecking
+     */
     private static Trie trie;
 
+    /**
+     * Scanner for reading and writing to documents
+     */
     private static FastScanner scanner;
 
+    /*
+      Static block for creating the new {@code Trie} with the dictionary "words.txt"
+     */
     static {
         try {
             trie = new Trie(new File("words.txt"));
@@ -28,14 +37,123 @@ public class ActionController {
 
     private ActionController() {}
 
-    public static void spellCheck(String filePath) throws IOException {
+    //TODO
+    @Deprecated
+    public static void diffCheck(String filePath1, String filePath2) {
+        DiffCheck.findDifferences(filePath1, filePath2);
+    }
+
+    /**
+     * Static method to fix white space in the given file
+     * @param filePath - the file path of the file to be fixed
+     * @throws IOException may be thrown in case of file not found or if files are open during editing
+     */
+    public static void fixWhiteSpace(String filePath) throws IOException{
         String extension = filePath.substring(filePath.lastIndexOf('.'));
         if (extension.equals(".doc") || extension.equals(".docx")) {
             scanner = new WordScanner(new File(filePath));
+            //Reading entire document removes any anomalous whitespace as is
             ArrayDeque<String> words = (ArrayDeque<String>) scanner.getDoc();
+            scanner.write(words);
+
+        } else {
+            scanner = new TextScanner(new File(filePath));
+            //Read document line by line
+            ArrayDeque<String> words = (ArrayDeque<String>) scanner.getDoc();
+            //Write the entire document back out as normal replaces the anomalous whitespace
+            PrintWriter writer = new PrintWriter(new FileWriter(new File(filePath)));
+            while (!words.isEmpty()) {
+                String curLine = words.removeFirst();
+                StringTokenizer tk = new StringTokenizer(curLine);
+                while (tk.hasMoreTokens()) {
+                    String cur = tk.nextToken();
+                    if (tk.hasMoreTokens())
+                        writer.print(cur + " ");
+                    else
+                        writer.print(cur);
+                }
+                if (!words.isEmpty())
+                    writer.println();
+            }
+            writer.close();
+        }
+    }
+
+    /**
+     * Static method to replace specified words in the document with their given replacements
+     * @param filePath - the file path of the file to be read
+     * @param replacements - the words to replace and their replacements
+     * @throws IOException may be thrown in case of file not found or if files are open during editing
+     */
+    public static void replaceWords(String filePath, HashMap<String, String> replacements) throws IOException{
+        //Get extension to determine the file type
+        String extension = filePath.substring(filePath.lastIndexOf('.'));
+        //If word doc create a new WordScanner
+        if (extension.equals(".doc") || extension.equals(".docx")) {
+            scanner = new WordScanner(new File(filePath));
+            //Read entire document word by word
+            ArrayDeque<String> words = (ArrayDeque<String>) scanner.getDoc();
+            //Add begin element to prevent looping
             words.addFirst(" ¬ ¬ ¬BEGIN¬ ¬ ¬");
             String cur = words.removeFirst();
             do {
+                //If the current word is in the map, replace it with its value
+                if (replacements.containsKey(cur)) {
+                    cur = replacements.get(cur);
+                }
+                //Add back into the queue
+                words.add(cur);
+                cur = words.removeFirst();
+            } while (!cur.equals(" ¬ ¬ ¬BEGIN¬ ¬ ¬"));
+            //Write words back into the document
+            scanner.write(words);
+        } else {
+            scanner = new TextScanner(new File(filePath));
+            //Read document line by line
+            ArrayDeque<String> words = (ArrayDeque<String>) scanner.getDoc();
+            //Open new PrintWriter
+            PrintWriter writer = new PrintWriter(new FileWriter(new File(filePath)));
+            while (!words.isEmpty()) {
+                String curLine = words.removeFirst();
+                //Read lines word by word
+                StringTokenizer tk = new StringTokenizer(curLine);
+                while (tk.hasMoreTokens()) {
+                    String cur = tk.nextToken();
+                    //If the current word is in the map, replace it with its value
+                    if (replacements.containsKey(cur)) {
+                        cur = replacements.get(cur);
+                    }
+                    //Write words out to document
+                    if (tk.hasMoreTokens())
+                        writer.print(cur + " ");
+                    else
+                        writer.print(cur);
+                }
+                if (!words.isEmpty())
+                    writer.println();
+            }
+            writer.close();
+        }
+    }
+
+    /**
+     * Static method to perform spellcheck functionality
+     * @param filePath - the file path of the document to spellcheck
+     * @throws IOException thrown in case of a file not found or documents open during execution
+     */
+    public static void spellCheck(String filePath) throws IOException {
+        //Get the extension to determine the file type
+        String extension = filePath.substring(filePath.lastIndexOf('.'));
+        //If document is a word doc create a WordScanner
+        if (extension.equals(".doc") || extension.equals(".docx")) {
+            scanner = new WordScanner(new File(filePath));
+            //Read entire document
+            ArrayDeque<String> words = (ArrayDeque<String>) scanner.getDoc();
+            //Add begin point to prevent looping
+            words.addFirst(" ¬ ¬ ¬BEGIN¬ ¬ ¬");
+            String cur = words.removeFirst();
+            do {
+                //If the word isn't in the trie and it isn't a delimiter, get the best matching word
                 if (!trie.contains(cur) && !cur.equals(scanner.getNewParagraph())
                         && !cur.equals(scanner.getNewRun())) {
                     cur = trie.findBestTypo(cur);
@@ -43,23 +161,30 @@ public class ActionController {
                 words.add(cur);
                 cur = words.removeFirst();
             } while (!cur.equals(" ¬ ¬ ¬BEGIN¬ ¬ ¬"));
+            //Call WordScanner.write to write the new list back into the document
             scanner.write(words);
 
-        } else {
+        } else { //If doc is anything else use a TextScanner
             scanner = new TextScanner(new File(filePath));
+            //Read entire document
             ArrayDeque<String> words = (ArrayDeque<String>) scanner.getDoc();
+            //Open PrintWriter for writing corrected words as it goes
             PrintWriter writer = new PrintWriter(new FileWriter(new File(filePath)));
             while (!words.isEmpty()) {
+                //Read in current line
                 String curLine = words.removeFirst();
+                //Parse words
                 StringTokenizer tk = new StringTokenizer(curLine);
                 while (tk.hasMoreTokens()) {
                     String cur = tk.nextToken();
+                    //If word is not in trie get the best match
                     if (!trie.contains(cur)) {
                         cur = trie.findBestTypo(cur);
                     }
+                    //While more words on the line print word and space
                     if (tk.hasMoreTokens())
                         writer.print(cur + " ");
-                    else
+                    else //Otherwise print a new line
                         writer.print(cur);
                 }
                 if (!words.isEmpty())
@@ -67,80 +192,6 @@ public class ActionController {
             }
             writer.close();
         }
-    }
-
-    public static void fixWhiteSpace(String filePath) throws IOException{
-        String extension = filePath.substring(filePath.lastIndexOf('.'));
-        if (extension.equals(".doc") || extension.equals(".docx")) {
-            scanner = new WordScanner(new File(filePath));
-            ArrayDeque<String> words = (ArrayDeque<String>) scanner.getDoc();
-            scanner.write(words);
-
-        } else {
-            scanner = new TextScanner(new File(filePath));
-            ArrayDeque<String> words = (ArrayDeque<String>) scanner.getDoc();
-
-            PrintWriter writer = new PrintWriter(new FileWriter(new File(filePath)));
-            while (!words.isEmpty()) {
-                String curLine = words.removeFirst();
-                StringTokenizer tk = new StringTokenizer(curLine);
-                while (tk.hasMoreTokens()) {
-                    String cur = tk.nextToken();
-                    if (tk.hasMoreTokens())
-                        writer.print(cur + " ");
-                    else
-                        writer.print(cur);
-                }
-                if (!words.isEmpty())
-                    writer.println();
-            }
-            writer.close();
-        }
-    }
-
-    public static void replaceWords(String filePath, HashMap<String, String> replacements) throws IOException{
-        String extension = filePath.substring(filePath.lastIndexOf('.'));
-        if (extension.equals(".doc") || extension.equals(".docx")) {
-            scanner = new WordScanner(new File(filePath));
-            ArrayDeque<String> words = (ArrayDeque<String>) scanner.getDoc();
-            words.addFirst(" ¬ ¬ ¬BEGIN¬ ¬ ¬");
-            String cur = words.removeFirst();
-            do {
-                if (replacements.containsKey(cur)) {
-                    cur = replacements.get(cur);
-                }
-                words.add(cur);
-                cur = words.removeFirst();
-            } while (!cur.equals(" ¬ ¬ ¬BEGIN¬ ¬ ¬"));
-            scanner.write(words);
-        } else {
-            scanner = new TextScanner(new File(filePath));
-            ArrayDeque<String> words = (ArrayDeque<String>) scanner.getDoc();
-            PrintWriter writer = new PrintWriter(new FileWriter(new File(filePath)));
-            while (!words.isEmpty()) {
-                String curLine = words.removeFirst();
-                StringTokenizer tk = new StringTokenizer(curLine);
-                while (tk.hasMoreTokens()) {
-                    String cur = tk.nextToken();
-                    if (replacements.containsKey(cur)) {
-                        cur = replacements.get(cur);
-                    }
-                    if (tk.hasMoreTokens())
-                        writer.print(cur + " ");
-                    else
-                        writer.print(cur);
-                }
-                if (!words.isEmpty())
-                    writer.println();
-            }
-            writer.close();
-        }
-    }
-
-    //TODO
-    @Deprecated
-    public static void diffCheck(String filePath1, String filePath2) {
-
     }
 
 }

@@ -2,8 +2,15 @@ package test.Generator;
 
 import java.io.*;
 
+/**
+ * Class to generate new text documents filled with random words and typos
+ */
 public class RandomText {
 
+    /**
+     * Generates a file with a random name, word count, and typos
+     * @return the path to this file
+     */
     public static String generate() {
         try {
             String path = WordWrapper.getRandomWord() + ".txt";

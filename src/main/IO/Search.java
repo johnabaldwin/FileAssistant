@@ -10,34 +10,26 @@ import java.util.ArrayList;
 
 public final class Search {
 
-    /*
-     * Current user's home directory file path
+    /**
+     * Current users home directory path
      */
     private static final File HOME_DIRECTORY = new File(System.getProperty("user.home"));
 
-    // Private constructor prevents object creation of static class
-    private Search() {}
-
+    /**
+     * List of results from the search
+     */
     private static final ArrayList<String> results = new ArrayList<>();
 
     /**
-     * Method intended to search all files and sub-files in this users {@code HOME_DIRECTORY}.
-     * The file name is guaranteed to be of a specific file type or have a wildcard file extension.
-     * @param fileName - The name of the file that is being searched for.
-     * @throws IOException
+     * Private constructor prevents object creation of static class
      */
-    public static void findSingleFile(final String fileName) throws IOException {
-        PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter("files.out")));
-        results.clear();
-        search(writer, fileName, HOME_DIRECTORY);
-        writer.close();
-    }
+    private Search() {}
 
     /**
      * Method intended to search all files and sub-files in this users {@code HOME_DIRECTORY}.
      * The file name is guaranteed to be of a specific file type or have a wildcard file extension.
      * @param fileNames - The names of the files that are being searched for.
-     * @throws IOException
+     * @throws IOException - searching for files is likely to throw {@code IOException}'s
      */
     public static void findFileSet(ArrayList<String> fileNames) throws IOException {
         PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter("files.out")));
@@ -48,31 +40,9 @@ public final class Search {
     }
 
     /**
-     * Private method for performing DFS style search on file system
-     * @param writer - PrintWriter to write found file paths to output
-     * @param fileName - File name to search for
-     * @param currentDir - Current working directory
-     */
-    private static void search(final PrintWriter writer, final String fileName, File currentDir) {
-        File[] filesInDir = currentDir.listFiles();
-        if (isNull(filesInDir)) {
-            return;
-        }
-
-        for (File checkFile : filesInDir) {
-            if (checkFile.getName().equalsIgnoreCase(fileName)) {
-                results.add(checkFile.getPath());
-                writer.println(checkFile.getPath());
-            } else if (checkFile.isDirectory() && checkFile.exists()) {
-                search(writer, fileName, checkFile);
-            }
-        }
-    }
-
-    /**
      * Method for finding the first instance of a given file name in the users {@code HOME_DIRECTORY}
      * @param fileName - The name of the file to search for
-     * @throws IOException
+     * @throws IOException - searching for files is likely to throw {@code IOException}'s
      */
     public static void findFirst(final String fileName) throws IOException {
         PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter("files2.out")));
@@ -80,6 +50,7 @@ public final class Search {
         ArrayDeque<File> queue = new ArrayDeque<>();
         queue.add(HOME_DIRECTORY);
 
+        //BFS on all directories starting from this users {@code HOME_DIRECTORY}
         while(!queue.isEmpty()) {
             File currentDir = queue.removeFirst();
             if (currentDir.isFile()) {
@@ -106,6 +77,25 @@ public final class Search {
     }
 
     /**
+     * Method intended to search all files and sub-files in this users {@code HOME_DIRECTORY}.
+     * The file name is guaranteed to be of a specific file type or have a wildcard file extension.
+     * @param fileName - The name of the file that is being searched for.
+     * @throws IOException - searching for files is likely to throw {@code IOException}'s
+     */
+    public static void findSingleFile(final String fileName) throws IOException {
+        PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter("files.out")));
+        results.clear();
+        search(writer, fileName, HOME_DIRECTORY);
+        writer.close();
+    }
+
+    /**
+     * Gets the results list of the most recently performed search
+     * @return - the results list of the most recently performed search
+     */
+    public static ArrayList<String> getResults() { return results; }
+
+    /**
      * Method for checking if {@code checkNull} is null
      * @param checkNull - Object to check if is null
      * @return - Returns a boolean stating whether the object passed in is null
@@ -114,6 +104,26 @@ public final class Search {
         return checkNull == null;
     }
 
-    public static ArrayList<String> getResults() { return results; }
+    /**
+     * Private method for performing DFS style search on file system
+     * @param writer - PrintWriter to write found file paths to output
+     * @param fileName - File name to search for
+     * @param currentDir - Current working directory
+     */
+    private static void search(final PrintWriter writer, final String fileName, File currentDir) {
+        File[] filesInDir = currentDir.listFiles();
+        if (isNull(filesInDir)) {
+            return;
+        }
 
+        //DFS on all directories in {@code currentDir}
+        for (File checkFile : filesInDir) {
+            if (checkFile.getName().equalsIgnoreCase(fileName)) {
+                results.add(checkFile.getPath());
+                writer.println(checkFile.getPath());
+            } else if (checkFile.isDirectory() && checkFile.exists()) {
+                search(writer, fileName, checkFile);
+            }
+        }
+    }
 }

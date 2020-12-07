@@ -6,8 +6,15 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Scanner;
 
+/**
+ * Class designed to test the FileAssistant project by generating multiple files
+ * and having it perform operations on them
+ */
 public class Generator {
 
+    /**
+     * Exit signal for performing commands
+     */
     public static int EXIT = 0;
 
     public static void main(String[] args) throws IOException {
