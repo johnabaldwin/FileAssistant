@@ -38,7 +38,7 @@ public class Generator {
         while (next != EXIT) {
             switch (next) {
                 case 1:
-                    ActionController.spellCheck("test.docx");
+                    ActionController.spellCheck("test.txt");
                     break;
                 case 2:
                     ActionController.fixWhiteSpace("text.docx");

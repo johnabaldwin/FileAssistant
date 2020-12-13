@@ -85,6 +85,7 @@ public class WordScanner extends FastScanner {
             for (XWPFRun r : p.getRuns()) {
                 //Get the text contained in each run
                 String run = r.getText(0);
+                System.out.println(run);
                 //parse using a string tokenizer and add each word to the list
                 StringTokenizer st = new StringTokenizer(run);
                 while (st.hasMoreTokens()) {
