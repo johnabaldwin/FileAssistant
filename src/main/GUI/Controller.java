@@ -202,7 +202,8 @@ public class Controller {
             fixWhiteSpace.setSelected(false);
         }
         if (diffCheck.isSelected()) {
-            ActionController.diffCheck(selected.get(0), selected.get(1));
+            String[] paths = {selected.get(0), selected.get(1)};
+            ActionController.diffCheck(paths);
             diffCheck.setSelected(false);
         }
     }

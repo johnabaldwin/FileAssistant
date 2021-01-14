@@ -39,8 +39,50 @@ public class ActionController {
 
     //TODO
     @Deprecated
-    public static void diffCheck(String filePath1, String filePath2) {
-        DiffCheck.findDifferences(filePath1, filePath2);
+    public static void diffCheck(String[] filePaths) throws IOException {
+        StringBuilder[] fileContent = new StringBuilder[2];
+        //read all content from files into two separate StringBuilders
+        for (int i = 0; i < 2; i++) {
+            String extension = filePaths[i].substring(filePaths[i].lastIndexOf('.'));
+            if (extension.equals(".doc") || extension.equals(".docx")) {
+                scanner = new WordScanner(new File(filePaths[i]));
+                ArrayDeque<String> doc = (ArrayDeque<String>) scanner.getDoc();
+                //read doc, if it is the last word don't put a space
+                while (!doc.isEmpty()) {
+                    if (doc.size() > 1) {
+                        fileContent[i].append(doc.removeFirst());
+                        fileContent[i].append(" ");
+                    } else {
+                        fileContent[i].append(doc.removeFirst());
+                    }
+                }
+            } else {
+                scanner = new TextScanner(filePaths[i]);
+                ArrayDeque<String> doc = (ArrayDeque<String>) scanner.getDoc();
+                //read doc, if it is the last word don't put a space
+                while (!doc.isEmpty()) {
+                    StringTokenizer stk = new StringTokenizer(doc.removeFirst());
+                    while (stk.hasMoreTokens()) {
+                        if (stk.countTokens() == 1 || doc.isEmpty()) {
+                            fileContent[i].append(stk.nextToken());
+                        } else {
+                            fileContent[i].append(stk.nextToken());
+                            fileContent[i].append(" ");
+                        }
+                    }
+                }
+            }
+        }
+        String key;
+        String pattern;
+        if (fileContent[0].length() > fileContent[1].length()) {
+            key = fileContent[0].toString();
+            pattern = fileContent[1].toString();
+        } else {
+            key = fileContent[1].toString();
+            pattern = fileContent[0].toString();
+        }
+        //DiffCheck.findDifferences(key, pattern);
     }
 
     /**
