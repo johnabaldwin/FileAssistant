@@ -122,12 +122,6 @@ public class Controller {
             }
         });
 
-        //Set splitPane view to have immutable size
-        SplitPane.Divider divider = splitPane.getDividers().get(0);
-        final double splitPos = divider.getPosition();
-        divider.positionProperty().addListener((observable, oldValue, newValue)
-                -> divider.setPosition(splitPos));
-
         //Enable selecting multiple files
         matchList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
