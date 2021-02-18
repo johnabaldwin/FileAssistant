@@ -1,17 +1,35 @@
 package main.Language;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import javafx.util.Pair;
+
+import java.util.*;
 
 public class DiffCheck {
 
     private static double SCALING_FACTOR = 0.1;
+    private static double FALSE_POSITIVE_TOLERANCE = 0.2;
 
     private DiffCheck() {
     }
 
-    public static double DiceSimilarity(String a, String b) {
+    public static double findSimilarity(String key, String pattern) {
+        Pair<Double, String> dsPair = DiceSimilarity(key, pattern);
+        double ds = dsPair.getKey();
+        if (ds > 0.2 && ds < 1.0) {
+            Pair<Double, String> jwPair = JaroWinklerSimilarity(key, pattern);
+            double jw = jwPair.getKey();
+            double lower = ds - (ds * FALSE_POSITIVE_TOLERANCE);
+            //double upper = ds + (ds * FALSE_POSITIVE_TOLERANCE);
+            if (jw >= lower) {
+                return ds;
+            } else {
+                return jw;
+            }
+        }
+        return ds;
+    }
+
+    public static Pair<Double, String> DiceSimilarity(String a, String b) {
         Set<String> docA = findBigrams(a);
         Set<String> docB = findBigrams(b);
 
@@ -19,15 +37,42 @@ public class DiffCheck {
         int sizeB = docB.size();
 
         docA.retainAll(docB);
+        System.out.println(docA);
 
+        Iterator<String> slow = docA.iterator();
+        Iterator<String> fast = docA.iterator();
+        fast.next();
+        while (fast.hasNext()) {
+            String bigram1 = slow.next();
+            String bigram2 = fast.next();
+            String last = bigram1.split(" ")[1];
+            String first = bigram2.split(" ")[0];
+            if (last.equals(first)) {
+                //Add mark to point in string
+                int i = a.indexOf(bigram1);
+                a = a.substring(0, i) + "¬¬" + a.substring(i);
+                //Find end of match sequence
+                while (fast.hasNext() && last.equals(first)) {
+                    bigram1 = slow.next();
+                    bigram2 = fast.next();
+                    last = bigram1.split(" ")[1];
+                    first = bigram2.split(" ")[0];
+                }
+                if (last.equals(first))
+                    i = a.indexOf(bigram2) + bigram2.length();
+                else
+                    i = a.indexOf(bigram1) + bigram1.length();
+                a = a.substring(0, i) + "¬¬" + a.substring(i);
+
+            }
+        }
         int nt = docA.size();
 
-        return (2.0 * (double) nt) / ((double) (sizeA + sizeB));
-
-
+        double result = (2.0 * (double) nt) / ((double) (sizeA + sizeB));
+        return new Pair<>(result, a);
     }
 
-    public static double JaroWinklerSimilarity(String a, String b) {
+    public static Pair<Double, String> JaroWinklerSimilarity(String a, String b) {
         String[] longer;
         String[] shorter;
 
@@ -38,23 +83,39 @@ public class DiffCheck {
             longer = b.split(" ");
             shorter = a.split(" ");
         }
-
         int halfLength = (shorter.length / 2) + 1;
 
-        String[] forwardCompare = getWordMatchSet(longer, shorter, halfLength);
-        String[] reverseCompare = getWordMatchSet(shorter, longer, halfLength);
+        String[] compareAB = getWordMatchSet(longer, shorter, halfLength);
+        String[] compareBA = getWordMatchSet(shorter, longer, halfLength);
+        String[] doc = a.substring(a.indexOf(compareAB[0])).split(" ");
 
-        if (forwardCompare.length == 0 || reverseCompare.length == 0)
-            return 0.0;
+        int lower = 0;
+        for (int i = 0; i < compareAB.length; i++) {
+            int location = a.indexOf(compareAB[i], lower);
+            lower = Math.max(lower, location);
+            a = a.substring(0, location) + "¬¬" + a.substring(location);
+            while (i + 1 < compareAB.length && doc[i + 1].equals(compareAB[i + 1])) {
+                i++;
+                lower = a.indexOf(doc[i-1]);
+            }
+            location = a.indexOf(compareAB[i], lower) + compareAB[i].length();
+            lower = Math.max(lower, location);
+            a = a.substring(0, location) + "¬¬" + a.substring(location);
+        }
 
-        int transpositions = transposition(forwardCompare, reverseCompare);
+        if (compareAB.length == 0 || compareBA.length == 0)
+            return new Pair<>(0.0, a);
 
-        double dist = (reverseCompare.length / ((double) shorter.length) + forwardCompare.length / ((double) longer.length)
-                + (reverseCompare.length - transpositions) / ((double) reverseCompare.length)) / 3.0;
+        int transpositions = transposition(compareAB, compareBA);
+
+        double dist = (compareBA.length / ((double) shorter.length) + compareAB.length / ((double) longer.length)
+                + (compareBA.length - transpositions) / ((double) compareBA.length)) / 3.0;
 
         int prefixLength = commonPrefixLength(shorter, longer);
 
-        return dist + (SCALING_FACTOR * prefixLength * (1.0 - dist));
+        double result = dist + (SCALING_FACTOR * prefixLength * (1.0 - dist));
+
+        return new Pair<>(result, a);
     }
 
     public static double getScalingFactor() {
@@ -62,7 +123,15 @@ public class DiffCheck {
     }
 
     public static void setScalingFactor(double scalingFactor) {
-        SCALING_FACTOR = scalingFactor;
+        SCALING_FACTOR = Math.min(scalingFactor, 0.25);
+    }
+
+    public static double getFalsePositiveTolerance() {
+        return FALSE_POSITIVE_TOLERANCE;
+    }
+
+    public static void setFalsePositiveTolerance(double falsePositiveTolerance) {
+        FALSE_POSITIVE_TOLERANCE = Math.min(falsePositiveTolerance, 0.3);
     }
 
     private static int commonPrefixLength(String[] shorter, String[] longer) {
@@ -80,8 +149,8 @@ public class DiffCheck {
         return Math.min(result, 4);
     }
 
-    private static Set<String> findBigrams(String doc) {
-        ArrayList<String> bigrams = new ArrayList<>();
+    private static LinkedHashSet<String> findBigrams(String doc) {
+        LinkedHashSet<String> bigrams = new LinkedHashSet<>();
         String[] words = doc.split(" ");
         if (words.length < 2) {
             bigrams.add(doc);
@@ -94,7 +163,7 @@ public class DiffCheck {
             }
         }
 
-        return new HashSet<>(bigrams);
+        return bigrams;
     }
 
     private static String[] getWordMatchSet(String[] first, String[] second, int range) {
@@ -106,8 +175,8 @@ public class DiffCheck {
             String findWord = first[i];
             boolean found = false;
 
-            // See if the character is within the limit positions away from the original
-            // position of that character.
+            // See if the word is within the limit positions away from the original
+            // position of that word.
             for (int j = Math.max(0, i - range); !found && j < Math.min(i + range, second.length); j++) {
                 if (copy[j].equals(findWord)) {
                     found = true;
@@ -132,55 +201,15 @@ public class DiffCheck {
     }
 
     private static int wordCount(String a) {
-        int result = 0;
-        int i = 0;
-        while (a.indexOf(" ", i) != -1) {
-            result++;
-            i = a.indexOf(" ") + 1;
-        }
-        return result;
+        return a.split(" ").length;
     }
 
+    public static void main(String[] args) {
+        String a = "constuprate scalpriform interdetermination midnoons twangler intepmitted lazarette sorboside blepharitic vomituses bibliopegist MNRAS Fini scoptically hurly-burlies";
+        String b  = "midnoons twangler intepmitted lazarette sorboside blepharitic MNRAS vomituses bibliopegist Fini scoptically hurly-burlies";
+        Pair<Double, String> d = DiffCheck.JaroWinklerSimilarity(a, b);
+        Pair<Double, String> d2 = DiffCheck.DiceSimilarity(a, b);
+        System.out.println(d);
+        System.out.println(d2);
+    }
 }
-
-
-
-/* PERSONAL COMPARISON */
-
-//    public static double findDifferences(String key, String pattern) {
-//        final int length = key.length();
-//        int begin = 0;
-//        int end = binSearch(key, pattern);
-//        double total = 0.0;
-//        total += (double)(end - begin) / length;
-//        while (end != key.length()) {
-//            begin = end + 1;
-//            begin = nextSpace(key, begin);
-//        }
-//        return total;
-//    }
-//
-//    private static int binSearch(String key, String pattern) {
-//        int mid = pattern.length() / 2;
-//        mid = nextSpace(pattern, mid);
-//        while (!key.substring(0, mid).equals(pattern.substring(0, mid))) {
-//            if (!key.substring(0, mid).equals(pattern.substring(0, mid))) {
-//                mid = mid / 2;
-//            } else {
-//                mid += (pattern.length() - mid) / 2;
-//            }
-//            if (mid > pattern.indexOf(" ")) {
-//                mid = nextSpace(pattern, mid);
-//            } else {
-//                mid = 0;
-//                break;
-//            }
-//        }
-//        return mid;
-//    }
-//
-//    private static int nextSpace(String pattern, int pos) {
-//        if (!pattern.contains(" ") || pattern.charAt(pos) == ' ')
-//            return pos;
-//        return pattern.indexOf(" ", pos);
-//    }
