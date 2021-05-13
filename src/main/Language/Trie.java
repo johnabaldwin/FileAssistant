@@ -8,20 +8,40 @@ import java.util.Scanner;
 
 public class Trie {
 
+    private final String customDictionary = "custom.txt";
+    /**
+     * Set of all words in this {@code Trie} for fast contains checking
+     */
+    private final HashSet<String> fastContains = new HashSet<>();
+    public String dictionaryName = "words.txt";
+    /**
+     * Root {@code Node} of this {@code Trie}, should always be empty
+     */
+    public Node root;
+    /**
+     * The typo currently being checked
+     */
+    private Word typo;
+    /**
+     * Size of the trie in terms of number of words
+     */
+    private int size = 0;
+
     /**
      * Node class to represent the nodes in the Trie.
      */
     private static class Node {
 
-        //Value of node if it is the termination of a string
-        private String val;
         //Character at this node
         private final char c;
+        //Value of node if it is the termination of a string
+        private String val;
         //Child nodes
         private Node left, mid, right;
 
         /**
          * Constructor to create new node of character {@code c}
+         *
          * @param c - character to place at this node
          */
         public Node(char c) {
@@ -44,6 +64,7 @@ public class Trie {
 
         /**
          * Word constructor to create new misspelled word
+         *
          * @param key - word that is misspelled
          */
         public Word(String key) {
@@ -65,8 +86,9 @@ public class Trie {
 
         /**
          * Constructor for replacements based on difference and word
+         *
          * @param diff - hamming distance between typo and replacement
-         * @param w - replacement word
+         * @param w    - replacement word
          */
         public Replacement(int diff, String w) {
             difference = diff;
@@ -75,6 +97,7 @@ public class Trie {
 
         /**
          * Compare to override for sorting words by hamming distance
+         *
          * @param o - replacement to compare to
          * @return the replacement that is a better match
          */
@@ -85,6 +108,7 @@ public class Trie {
 
         /**
          * Compares two {@code Replacement}'s to check word equality
+         *
          * @param o - the other replacement to compare
          * @return whether or not these replacements represent the same word
          */
@@ -99,6 +123,7 @@ public class Trie {
 
         /**
          * Override of toString method
+         *
          * @return - the word this {@code Replacement} represents
          */
         @Override
@@ -108,41 +133,49 @@ public class Trie {
     }
 
     /**
-     * Root {@code Node} of this {@code Trie}, should always be empty
-     */
-    public Node root;
-
-    /**
-     * The typo currently being checked
-     */
-    private Word typo;
-
-    /**
-     * Set of all words in this {@code Trie} for fast contains checking
-     */
-    private final HashSet<String> fastContains = new HashSet<>();
-
-    /**
-     * Size of the trie in terms of number of words
-     */
-    private int size = 0;
-
-
-    /**
      * Constructor to create a new {@code Trie} from a given dictionary
-     * @param dictionary - the file containing all the words to add to this {@code Trie}
+     *
      * @throws IOException if the file does not exist
      */
-    public Trie(File dictionary) throws IOException {
+    public Trie() throws IOException {
+        File dictionary = new File(dictionaryName);
         Scanner in = new Scanner(dictionary);
+        while (in.hasNext()) {
+            String cur = in.next();
+            put(cur);
+        }
+        dictionary = new File(customDictionary);
+        in = new Scanner(dictionary);
         while (in.hasNext()) {
             String cur = in.next();
             put(cur);
         }
     }
 
+    public static void main(String[] args) throws IOException {
+        Trie test = new Trie();
+        System.out.println("hello world");
+        if (test.get("intuiyionally") == null) {
+            System.out.println("enter");
+            PriorityQueue<Replacement> list = test.findTypo("intuiyionally");
+            System.out.println(list.size());
+            System.out.println(list);
+            while (!list.isEmpty())
+                System.out.println(list.poll().word);
+        }
+    }
+
+    public void setDictionaryName(String dictionaryName) {
+        this.dictionaryName = dictionaryName;
+    }
+
+    public String getCustomDictionary() {
+        return customDictionary;
+    }
+
     /**
      * Checks for the specified key in the {@code Trie}
+     *
      * @param key - the key to check for
      * @return a boolean representing whether or not the {@code key} is in the {@code Trie}
      */
@@ -152,6 +185,7 @@ public class Trie {
 
     /**
      * Finds the closest replacement to a given misspelled word
+     *
      * @param key - the misspelled word
      * @return {@code String} replacement word
      */
@@ -164,6 +198,7 @@ public class Trie {
 
     /**
      * Public method to find where the typo is in {@code key} and get possible replacements
+     *
      * @param key - the word assumed to be a typo
      * @return {@code PriorityQueue<Replacement>} containing possible replacements for the typo
      */
@@ -174,9 +209,44 @@ public class Trie {
     }
 
     /**
+     * Public method to get the specified key from the {@code Trie}
+     *
+     * @param key - the key to find in the trie
+     * @return null or the value of the key
+     */
+    public String get(String key) {
+        Node nd = this.get(root, key, 0);
+        if (nd == null)
+            return null;
+        return nd.val;
+    }
+
+    /**
+     * Gets the number of words in the {@code Trie}
+     *
+     * @return an int representing the number of words in the {@code Trie}
+     */
+    public int getSize() {
+        return size;
+    }
+
+    /**
+     * Public method to put a specified string into the {@code Trie}
+     *
+     * @param key - the string to insert into the {@code Trie}
+     */
+    public void put(String key) {
+        if (fastContains.add(key)) {
+            root = this.put(root, key, 0);
+            size++;
+        }
+    }
+
+    /**
      * Private method for determining if there is a typo then finding likely substitutes
+     *
      * @param cur - the current {@code Node} in the {@code Trie}
-     * @param d - the depth of the current {@code Node}
+     * @param d   - the depth of the current {@code Node}
      * @return null or the {@code Node} with the value of the word assumed to have been a typo
      */
     private Node findTypo(Node cur, int d) {
@@ -204,6 +274,7 @@ public class Trie {
 
     /**
      * Gets all possible replacement words for {@code typo}
+     *
      * @param cur - the current {@code Node}
      */
     private void findWords(Node cur) {
@@ -216,7 +287,7 @@ public class Trie {
             than the current word with the smallest difference, and the new word is not in the
             queue, then it should be inserted.
              */
-            if ((diff <= typo.error.length()/2 + 1 || (!typo.replacements.isEmpty() &&
+            if ((diff <= typo.error.length() / 2 + 1 || (!typo.replacements.isEmpty() &&
                     diff <= typo.replacements.peek().difference)) &&
                     !typo.replacements.contains(insert))
                 typo.replacements.add(insert);
@@ -230,22 +301,11 @@ public class Trie {
     }
 
     /**
-     * Public method to get the specified key from the {@code Trie}
-     * @param key - the key to find in the trie
-     * @return null or the value of the key
-     */
-    public String get(String key) {
-        Node nd = this.get(root, key, 0);
-        if (nd == null)
-            return null;
-        return nd.val;
-    }
-
-    /**
      * Private method to get the specified key from the {@code Trie}
-     * @param x - current {@code Node}
+     *
+     * @param x   - current {@code Node}
      * @param key - the string to find in the {@code Trie}
-     * @param d - {@code Node} depth
+     * @param d   - {@code Node} depth
      * @return null or the {@code Node} with value corresponding to the key
      */
     private Node get(Node x, String key, int d) {
@@ -264,14 +324,9 @@ public class Trie {
     }
 
     /**
-     * Gets the number of words in the {@code Trie}
-     * @return an int representing the number of words in the {@code Trie}
-     */
-    public int getSize() { return size; }
-
-    /**
      * Find the hamming distance between two words
-     * @param key - the original word
+     *
+     * @param key  - the original word
      * @param comp - the word to compare
      * @return an integer distance between two words
      */
@@ -287,21 +342,11 @@ public class Trie {
     }
 
     /**
-     * Public method to put a specified string into the {@code Trie}
-     * @param key - the string to insert into the {@code Trie}
-     */
-    public void put(String key) {
-        if (fastContains.add(key)) {
-            root = this.put(root, key, 0);
-            size++;
-        }
-    }
-
-    /**
      * Private method to put a specified key in the {@code Trie}
+     *
      * @param cur - the current {@code Node} in the {@code Trie}
      * @param key - the key to insert in the {@code Trie}
-     * @param d - the depth of the current {@code Node}
+     * @param d   - the depth of the current {@code Node}
      * @return {@code Node} currently being recursed over
      */
     private Node put(Node cur, String key, int d) {
@@ -318,18 +363,5 @@ public class Trie {
         else
             cur.right = put(cur.right, key, d);
         return cur;
-    }
-
-    public static void main(String[] args) throws IOException {
-        Trie test = new Trie(new File("words.txt"));
-        System.out.println("hello world");
-        if (test.get("intuiyionally") == null) {
-            System.out.println("enter");
-            PriorityQueue<Replacement> list = test.findTypo("intuiyionally");
-            System.out.println(list.size());
-            System.out.println(list);
-            while (!list.isEmpty())
-                System.out.println(list.poll().word);
-        }
     }
 }

@@ -1,0 +1,108 @@
+* {
+    -fx-background-color: #2b2b2b;
+    -fx-global-background: #2b2b2b;
+    -fx-base1: derive(#2457BE, -10%);
+    -fx-base2: pink; /* derive(-fx-global-background, -9%);*/
+    -fx-text-fill: white;
+    -fx-font-family: "Arial";
+    -fx-text-fill: linear-gradient(white, #d0d0d0);
+}
+
+#close-button {
+    -fx-font-weight: bold;
+}
+
+#close-button Text {
+    -fx-effect: dropshadow(one-pass-box, rgba(0, 0, 0, 0.9), 1, 0.0, 0, 1);
+}
+
+#close-button:hover {
+    -fx-background-color: #992727;
+}
+
+#dark-blue {
+    -fx-background-color: #090a0c,
+    linear-gradient(#252528 0%, #1f2429 20%, #191d22 100%),
+    linear-gradient(#072a30, #1d1d21),
+    radial-gradient(center 50% 0%, radius 100%, rgba(114, 131, 148, 0.9), rgba(255, 255, 255, 0));
+    -fx-background-radius: 15 2 2 15, 15 5 5 15, 15 5 5 15, 15 5 5 15;
+    -fx-background-insets: 0, 1, 1, 1;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.6), 5, 0.0, 0, 1);
+    -fx-font-family: "Arial";
+    -fx-text-fill: linear-gradient(white, #d0d0d0);
+    -fx-font-size: 10px;
+    /*-fx-padding: 10 20 10 20;*/
+}
+
+#dark-blue Text {
+    -fx-effect: dropshadow(one-pass-box, rgba(0, 0, 0, 0.9), 1, 0.0, 0, 1);
+}
+
+.label {
+
+}
+
+.list-view {
+    -fx-background-color: derive(#2b2b2b, +20%);
+}
+
+.list-cell:selected {
+    /*-fx-background-color: -fx-base1;*/
+}
+
+.TopListCell:selected {
+    -fx-background-color: red;
+}
+
+.spinner {
+    -fx-border-width: 1 1 1 1;
+}
+
+.spinner .increment-arrow-button,
+.spinner .decrement-arrow-button {
+    -fx-background-color: #3e859f;
+}
+
+.spinner > .increment-arrow-button:hover,
+.spinner > .decrement-arrow-button:hover {
+    /* interpolate color between yellow and red based on first color brightness */
+    -fx-background-color: ladder(#444, #3e859f 0%, black 100%);
+}
+
+.spinner .increment-arrow-button:hover:pressed,
+.spinner .decrement-arrow-button:hover:pressed,
+.spinner .increment-arrow-button:pressed,
+.spinner .decrement-arrow-button:pressed {
+    /* interpolate color between yellow and red based on first color brightness */
+    -fx-background-color: ladder(#AAA, #3e859f 0%, black 100%);
+}
+
+.split-pane > .split-pane-divider {
+    -fx-background-color: rgb(2, 0, 36),
+    linear-gradient(to left, rgba(2, 0, 36, 1) 0%, rgb(43, 43, 43) 70%, rgb(36, 87, 190) 75%, rgba(2, 0, 36, 1) 85%);
+    -fx-background-radius: 5;
+}
+
+.spinner > .text-input {
+    -fx-background-color: blue;
+    /*-fx-background-color: linear-gradient(from 50% 0% to 0px 5px, -fx-base1, -fx-base2),*/
+    /*linear-gradient(from 0% 50% to 5px 0px, -fx-base1, -fx-base2),*/
+    /*linear-gradient(from 100% 50% to 5px 0px, -fx-base1, -fx-base2),*/
+    /*linear-gradient(from 50% 100% to 0px 5px, -fx-base1, -fx-base2);*/
+    /*-fx-background-color: linear-gradient(from 0px 0px to 0px 5px, #020024 0%, -fx-global-background 50%, #2457BE 75%,*/
+    /*        #020024 85%, -fx-global-background 95%);*/
+    -fx-border-width: 0;
+}
+
+.text-field {
+    -fx-background-color: #a0a0a0;
+}
+
+.custom {
+    -fx-control-inner-background: orange;
+}
+
+.tool-bar {
+    -fx-padding: 0 10 5 0;
+}

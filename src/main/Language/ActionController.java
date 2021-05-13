@@ -29,7 +29,7 @@ public class ActionController {
      */
     static {
         try {
-            trie = new Trie(new File("words.txt"));
+            trie = new Trie();
         } catch (IOException e) {
             e.printStackTrace();
         }

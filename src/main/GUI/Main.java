@@ -1,6 +1,6 @@
 package main.GUI;
 
-import javafx.application.Application;
+import javafx.application.*;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
@@ -28,6 +28,11 @@ public class Main extends Application {
         stage.setScene(scene);
         // Set the Title to the Stage
         stage.setTitle("FileAssistant");
+
+        stage.setOnCloseRequest(value -> {
+            Platform.exit();
+        });
+
         // Display the Stage
         stage.show();
     }

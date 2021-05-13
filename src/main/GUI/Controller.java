@@ -1,17 +1,20 @@
 package main.GUI;
 
+import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
+import javafx.fxml.*;
+import javafx.scene.*;
+import javafx.scene.layout.*;
+import javafx.stage.*;
 import main.IO.Search;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import main.Language.ActionController;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,9 +26,20 @@ import java.util.stream.IntStream;
  */
 public class Controller {
 
-    //Split pane defining the entire window
     @FXML
-    private SplitPane splitPane;
+    private MenuBar menuBar;
+
+    @FXML
+    private Menu fileMenu;
+
+    @FXML
+    private Menu settingsMenu;
+
+    @FXML
+    private MenuItem diffCheckSettings;
+
+    @FXML
+    private Menu helpMenu;
 
     //Text input for file name or path
     @FXML
@@ -124,7 +138,6 @@ public class Controller {
 
         //Enable selecting multiple files
         matchList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-
         //Only enable diff checking when 2 files are selected
         matchList.getSelectionModel().getSelectedItems().addListener((ListChangeListener.Change<? extends String> c) -> {
             if (matchList.getSelectionModel().getSelectedItems().size() == 2) {
@@ -161,7 +174,32 @@ public class Controller {
             }
         });
 
+        diffCheckSettings.setOnAction(value -> {
+            String name = "Settings";
+            String fxmlPath = "Settings.fxml";
+            try {
+                newWindow(name, fxmlPath);
+            } catch (IOException e) {
+                System.err.println(e);
+            }
+        });
+    }
 
+    private double x, y;
+
+    private void newWindow(String name, String fxmlPath) throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+        //loader.setLocation(getClass().getResource(fxmlPath));
+        //FileInputStream fxmlStream = new FileInputStream(fxmlPath);
+        AnchorPane root = loader.load();
+
+        Stage stage = new Stage();
+        Scene scene = new Scene(root);
+        stage.setScene(scene);
+        stage.setTitle(name);
+        stage.initStyle(StageStyle.UNDECORATED);
+
+        stage.show();
     }
 
     /**

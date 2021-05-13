@@ -8,6 +8,7 @@ public class DiffCheck {
 
     private static double SCALING_FACTOR = 0.1;
     private static double FALSE_POSITIVE_TOLERANCE = 0.2;
+    private static int SHINGLES = 2;
 
     private DiffCheck() {
     }
@@ -30,8 +31,8 @@ public class DiffCheck {
     }
 
     public static Pair<Double, String> DiceSimilarity(String a, String b) {
-        Set<String> docA = findBigrams(a);
-        Set<String> docB = findBigrams(b);
+        Set<String> docA = findNgrams(a);
+        Set<String> docB = findNgrams(b);
 
         int sizeA = docA.size();
         int sizeB = docB.size();
@@ -43,25 +44,25 @@ public class DiffCheck {
         Iterator<String> fast = docA.iterator();
         fast.next();
         while (fast.hasNext()) {
-            String bigram1 = slow.next();
-            String bigram2 = fast.next();
-            String last = bigram1.split(" ")[1];
-            String first = bigram2.split(" ")[0];
+            String Ngram1 = slow.next();
+            String Ngram2 = fast.next();
+            String last = Ngram1.split(" ")[SHINGLES - 1];
+            String first = Ngram2.split(" ")[0];
             if (last.equals(first)) {
                 //Add mark to point in string
-                int i = a.indexOf(bigram1);
+                int i = a.indexOf(Ngram1);
                 a = a.substring(0, i) + "¬¬" + a.substring(i);
                 //Find end of match sequence
                 while (fast.hasNext() && last.equals(first)) {
-                    bigram1 = slow.next();
-                    bigram2 = fast.next();
-                    last = bigram1.split(" ")[1];
-                    first = bigram2.split(" ")[0];
+                    Ngram1 = slow.next();
+                    Ngram2 = fast.next();
+                    last = Ngram1.split(" ")[SHINGLES - 1];
+                    first = Ngram2.split(" ")[0];
                 }
                 if (last.equals(first))
-                    i = a.indexOf(bigram2) + bigram2.length();
+                    i = a.indexOf(Ngram2) + Ngram2.length();
                 else
-                    i = a.indexOf(bigram1) + bigram1.length();
+                    i = a.indexOf(Ngram1) + Ngram1.length();
                 a = a.substring(0, i) + "¬¬" + a.substring(i);
 
             }
@@ -118,6 +119,14 @@ public class DiffCheck {
         return new Pair<>(result, a);
     }
 
+    public static double getFalsePositiveTolerance() {
+        return FALSE_POSITIVE_TOLERANCE;
+    }
+
+    public static void setFalsePositiveTolerance(double falsePositiveTolerance) {
+        FALSE_POSITIVE_TOLERANCE = Math.min(falsePositiveTolerance, 0.3);
+    }
+
     public static double getScalingFactor() {
         return SCALING_FACTOR;
     }
@@ -126,12 +135,37 @@ public class DiffCheck {
         SCALING_FACTOR = Math.min(scalingFactor, 0.25);
     }
 
-    public static double getFalsePositiveTolerance() {
-        return FALSE_POSITIVE_TOLERANCE;
+    public static int getSHINGLES() { return SHINGLES; }
+
+    public static void setSHINGLES(int SHINGLES) { DiffCheck.SHINGLES = SHINGLES; }
+
+    public static LinkedHashSet<String> findNgrams(String doc) {
+        LinkedHashSet<String> Ngrams = new LinkedHashSet<>();
+        String[] words = doc.split(" ");
+        if (words.length < SHINGLES) {
+            Ngrams.add(doc);
+        } else {
+            for (int i = 0; i < words.length - SHINGLES + 1; i++) {
+                StringBuilder Ngram = new StringBuilder();
+                System.out.println(words[i]);
+                for (int j = i; j < i + SHINGLES; j++) {
+                    Ngram.append(words[j]);
+                    Ngram.append(" ");
+                }
+                Ngrams.add(Ngram.toString().trim());
+            }
+        }
+
+        return Ngrams;
     }
 
-    public static void setFalsePositiveTolerance(double falsePositiveTolerance) {
-        FALSE_POSITIVE_TOLERANCE = Math.min(falsePositiveTolerance, 0.3);
+    public static void main(String[] args) {
+        String a = "constuprate scalpriform interdetermination midnoons twangler intepmitted lazarette sorboside blepharitic vomituses bibliopegist MNRAS Fini scoptically hurly-burlies";
+        String b  = "midnoons twangler intepmitted lazarette sorboside blepharitic MNRAS vomituses bibliopegist Fini scoptically hurly-burlies";
+//        Pair<Double, String> d = DiffCheck.JaroWinklerSimilarity(a, b);
+//        Pair<Double, String> d2 = DiffCheck.DiceSimilarity(a, b);
+        System.out.println(findNgrams(a));
+        System.out.println(findNgrams(b));
     }
 
     private static int commonPrefixLength(String[] shorter, String[] longer) {
@@ -147,23 +181,6 @@ public class DiffCheck {
 
         // Limit the result to 4.
         return Math.min(result, 4);
-    }
-
-    private static LinkedHashSet<String> findBigrams(String doc) {
-        LinkedHashSet<String> bigrams = new LinkedHashSet<>();
-        String[] words = doc.split(" ");
-        if (words.length < 2) {
-            bigrams.add(doc);
-        } else {
-            for (int i = 1; i < words.length; i++) {
-                String bigram = words[i - 1] +
-                        " " +
-                        words[i];
-                bigrams.add(bigram);
-            }
-        }
-
-        return bigrams;
     }
 
     private static String[] getWordMatchSet(String[] first, String[] second, int range) {
@@ -202,14 +219,5 @@ public class DiffCheck {
 
     private static int wordCount(String a) {
         return a.split(" ").length;
-    }
-
-    public static void main(String[] args) {
-        String a = "constuprate scalpriform interdetermination midnoons twangler intepmitted lazarette sorboside blepharitic vomituses bibliopegist MNRAS Fini scoptically hurly-burlies";
-        String b  = "midnoons twangler intepmitted lazarette sorboside blepharitic MNRAS vomituses bibliopegist Fini scoptically hurly-burlies";
-        Pair<Double, String> d = DiffCheck.JaroWinklerSimilarity(a, b);
-        Pair<Double, String> d2 = DiffCheck.DiceSimilarity(a, b);
-        System.out.println(d);
-        System.out.println(d2);
     }
 }

@@ -95,6 +95,10 @@ public final class Search {
      */
     public static ArrayList<String> getResults() { return results; }
 
+    public static String getHome() {
+        return HOME_DIRECTORY.getPath();
+    }
+
     /**
      * Method for checking if {@code checkNull} is null
      * @param checkNull - Object to check if is null
